@@ -2,9 +2,11 @@ name: macOS
 on:
   #schedule:
   #  - cron:  '0 0 * * *'
-  #push:
+  push:
   pull_request:
 
+env:
+  MACOSX_DEPLOYMENT_TARGET: 10.11
 
 jobs:
   gnat_gprbuild:

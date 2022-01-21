@@ -1,9 +1,10 @@
 name: Sanity Checking
 on:
-  schedule:
-    - cron:  '0 0 * * *' # Every day at midnight
-  push:
-  pull_request:
+  #schedule:
+  #  - cron:  '0 0 * * *' # Every day at midnight
+  #push:
+  #pull_request:
+  workflow_dispatch
 
 jobs:
   sanity_checking:
