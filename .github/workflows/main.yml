@@ -1,0 +1,59 @@
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    name: Build
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: ./sbx
+          key: ${{ runner.os }}-sbx
+          restore-keys: ${{ runner.os }}-sbx
+
+      - uses: uraimo/run-on-arch-action@v2
+        name: Build artifact
+        id: build
+        with:
+          arch: aarch64
+          distro: ubuntu20.04
+
+          # Not required, but speeds up builds
+          githubToken: ${{ github.token }}
+
+          # Create an artifacts directory
+          setup: |
+            mkdir -p "${PWD}/sbx"
+            mkdir -p "${PWD}/out_artifacts"
+
+          # Mount the artifacts directory as /artifacts in the container
+          dockerRunArgs: |
+            --volume "${PWD}:/tmp/GNAT-FSF-builds"
+
+          # Pass some environment variables to the container
+          env: | # YAML, but pipe character is necessary
+            artifact_name: git
+
+          # The shell to run commands with in the container
+          shell: /bin/bash
+
+          # Install some dependencies in the container. This speeds up builds if
+          # you are also using githubToken. Any dependencies installed here will
+          # be part of the container image that gets cached, so subsequent
+          # builds don't have to re-install them. The image layer is cached
+          # publicly in your project's package repository, so it is vital that
+          # no secrets are present in the container state or logs.
+          install: |
+                apt-get update -q -y
+                apt-get install -q -y git python3 python3-pip m4 bison texinfo
+
+          # Produce a binary artifact and place it in the mounted volume
+          run: |
+            pip install e3-core==22.1.0
+            sed -i -e '/HOST_GUESS/a\    "aarch64-linux": {"os": "Linux", "cpu": "aarch64"},' /usr/local/lib/python3.8/dist-packages/e3/platform_db/knowledge_base.py
+            cd /tmp/GNAT-FSF-builds/
+            ./anod build mpc -v --loglevel DEBUG
+
+      - name: Show the artifact
+        run: |
+          ls -al "${PWD}/out_artifacts"
