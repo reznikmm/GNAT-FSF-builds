@@ -3,13 +3,13 @@ on:
   #schedule:
   #  - cron:  '0 0 * * *'
   #push:
-  pull_request:
+  [pull_request, workflow_dispatch]
 
 
 jobs:
   gnat_gprbuild:
     name: GNAT macOS and GPRbuild
-    runs-on: macos-12
+    runs-on: macos-14
     steps:
     - name: Checkout Project
       uses: actions/checkout@v2
@@ -17,7 +17,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: 3.10.11
 
     - name: Install Python dependencies
       run: |
