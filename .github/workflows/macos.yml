@@ -25,7 +25,13 @@ jobs:
         pip install e3-core==22.1.0
 
     - name: Build GNAT native
-      run: ./anod build gcc -v --loglevel DEBUG --enable-cleanup
+      run: |
+        CC="aarch64-apple-darwin21.6.0-gcc" CXX="aarch64-apple-darwin21.6.0-g++" \
+        ./anod build gcc -v --loglevel DEBUG --enable-cleanup
+
+    - name: Cat config.log
+      if: always()
+      run: cat /Users/runner/work/GNAT-FSF-builds/GNAT-FSF-builds/sbx/aarch64-darwin/gcc/build/config.log
 
     - name: Build GDB
       run: ./anod build gdb -v --loglevel DEBUG --enable-cleanup
