@@ -23,6 +23,7 @@ jobs:
       run: |
         ld -v
         xcrun --find ld-classic
+        sudo cp -v ./ld /usr/bin/ld || true
 
     - name: Install Python dependencies
       run: |
@@ -36,7 +37,10 @@ jobs:
 
     - name: Cat config.log
       if: always()
-      run: cat /Users/runner/work/GNAT-FSF-builds/GNAT-FSF-builds/sbx/aarch64-darwin/gcc/build/config.log
+      run: |
+        /Users/runner/work/GNAT-FSF-builds/GNAT-FSF-builds/sbx/aarch64-darwin/base_gcc/install/bin/aarch64-apple-darwin21.6.0-gcc --print-prog-name=cc1
+        ls -l $(dirname `/Users/runner/work/GNAT-FSF-builds/GNAT-FSF-builds/sbx/aarch64-darwin/base_gcc/install/bin/aarch64-apple-darwin21.6.0-gcc --print-prog-name=cc1`)
+        cat /Users/runner/work/GNAT-FSF-builds/GNAT-FSF-builds/sbx/aarch64-darwin/gcc/build/config.log
 
     - name: Build GDB
       run: ./anod build gdb -v --loglevel DEBUG --enable-cleanup
