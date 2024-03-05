@@ -53,3 +53,4 @@ process of publising GNAT FSF package to the Alire index.
 Edit the PKG_VERSION and CRATE_VERSION constant and then run the script to
 generate all the GNAT manifests. The script also checks the correctness of
 sha256 hashes.
+
