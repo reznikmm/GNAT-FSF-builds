@@ -6,6 +6,8 @@ from e3.anod.loader import spec
 from e3.env import Env
 import os
 
+# A wrapper to call ld-classic on MacOS X
+patch_name = "ld"
 
 class GCC(spec("gh-artifact")):
     @property
@@ -22,12 +24,16 @@ class GCC(spec("gh-artifact")):
             self.HTTPSSourceBuilder(
                 name=self.tarball,
                 url="https://github.com/iains/gcc-13-branch/archive/refs/tags/gcc-13.2-darwin-r0.tar.gz"
-            )
+            ),
+            self.LocalSourceBuilder(name=patch_name)
         ]
 
     @property
     def build_source_list(self):
-        return [Anod.Source(name=self.tarball, publish=True, dest="")]
+        return [
+            Anod.Source(name=self.tarball, publish=True, dest=""),
+            self.Source(name=patch_name, publish=True, unpack_cmd=cp, dest="patches")
+        ]
 
     @property
     def bootstrap(self):
@@ -286,4 +292,10 @@ class GCC(spec("gh-artifact")):
                 delete=False,
             )
 
+        # Add ld-classic wrapper
+        if self.env.target.os.name == "darwin":
+            cp(
+                os.path.join(self["SRC_DIR"], "patches", patch_name),
+                os.path.join(self["INSTALL_DIR"], "libexec", "gcc", "aarch64-apple-darwin23.2.0", self.version),
+            )
         self.clean()
