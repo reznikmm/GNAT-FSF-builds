@@ -98,8 +98,7 @@ class ReleasePackage(spec("common")):
     def build_deps(self):
         pck = self.package
         if pck == "gprbuild":
-            return [Anod.Dependency("gprbuild"),
-                    Anod.Dependency("gpr2", qualifier="tools_only")]
+            return [Anod.Dependency("gprbuild", track=True)]
 
         if pck == "gnatcov":
             return [Anod.Dependency("gnatcov", track=True)]
