@@ -54,13 +54,15 @@ class ReleasePackage(spec("common")):
             return "1"
         elif package == "gnat":
             if self.env.target.triplet == "arm-eabi":
-                return "3"
+                return "1"
             elif self.env.target.triplet == "riscv64-elf":
-                return "3"
+                return "1"
             elif self.env.target.triplet == "avr-elf":
-                return "3"
+                return "1"
+            elif self.env.target.triplet == "xtensa-esp32-elf":
+                return "1"
             else:
-                return "3"
+                return "1"
 
     @property
     def release_name(self):
@@ -129,6 +131,12 @@ class ReleasePackage(spec("common")):
                     Anod.Dependency("gcc", track=True),
                     Anod.Dependency("gdb", track=True),
                     Anod.Dependency("avrlibc", track=True),
+                ]
+
+            elif self.env.target.triplet == "xtensa-esp32-elf":
+                return [
+                    Anod.Dependency("gcc", track=True),
+                    Anod.Dependency("gdb", track=True),
                 ]
 
             elif self.env.host.triplet == self.env.target.triplet:
