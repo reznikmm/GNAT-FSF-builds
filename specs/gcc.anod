@@ -34,17 +34,11 @@ class GCC(spec("gh-artifact")):
     @cached_property
     def tarball(self):
         t = util.GCCSnapshotTarballFinder.get(self.branch).tarball
-        if self.host_is_macos_arm:
-            return t.replace(".tar.xz", ".zip")
-        else:
-            return t
+        return t.replace(".tar.xz", ".zip")
 
     @cached_property
     def url(self):
-        if self.host_is_macos_arm:
-            return "https://github.com/iains/gcc-darwin-arm64/archive/refs/heads/master-wip-apple-si.zip"
-        else:
-            return util.GCCSnapshotTarballFinder.get(self.branch).url
+        return "https://github.com/reznikmm/gcc-darwin-arm64/archive/refs/heads/master-wip-apple-si.zip"
 
     @property
     def source_pkg_build(self):
