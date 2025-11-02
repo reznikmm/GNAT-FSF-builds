@@ -5,13 +5,13 @@ class base_gcc(spec("binary_install")):
     @property
     def version(self):
         if self.host_is_macos_arm:
-            return "15.1.0-2"
+            return "16.0.0-snapshot"
         else:
-            return "15.2.0-1"
+            return "16.0.0-snapshot"
 
     @property
     def tarball(self):
-        return "gnat-%s-%s.tar.gz" % (self.env.platform, self.version)
+        return "gnat-%s-%s.tar.gz" % (self.env.platform, "16.0.0-20251026")
 
     @property
     def url(self):

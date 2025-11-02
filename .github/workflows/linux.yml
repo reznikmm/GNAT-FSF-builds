@@ -13,7 +13,7 @@ name: GNAT Linux
         description: Set to true to publish results in a GitHub release
         type: boolean
         required: false
-        default: false
+        default: true
 jobs:
   gcc_dependencies:
     name: GCC Dependencies Linux
