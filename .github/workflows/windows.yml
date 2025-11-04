@@ -13,7 +13,7 @@ name: GNAT Windows
         description: Set to true to publish results in a GitHub release
         type: boolean
         required: false
-        default: true
+        default: false
 jobs:
   gcc_dependencies:
     name: GCC Dependencies WindowsMsys2
