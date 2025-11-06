@@ -4,21 +4,15 @@ from e3.anod.loader import spec
 class base_gcc(spec("binary_install")):
     @property
     def version(self):
-        if self.env.host.os.name == "windows":
-            return "15.2.0-1"
-        else:
-            return "16.0.0-snapshot"
+        return "16.0.0-20251102"
 
     @property
     def tarball(self):
-        if self.env.host.os.name == "windows":
-            return "gnat-%s-%s.tar.gz" % (self.env.platform, self.version)
-        else:
-            return "gnat-%s-%s.tar.gz" % (self.env.platform, "16.0.0-20251026")
+        return "gnat-%s-%s.tar.gz" % (self.env.platform, self.version)
 
     @property
     def url(self):
         return (
-            "https://github.com/alire-project/GNAT-FSF-builds/releases/download/gnat-%s/%s"
+            "https://github.com/reznikmm/GNAT-FSF-builds/releases/download/%s/%s"
             % (self.version, self.tarball)
         )
