@@ -53,6 +53,7 @@ class PlatDB(PlatformDBPlugin):
         self.build_targets.update(
             {
                 "aarch64-darwin": {"name": "aarch64-apple-darwin%(os_version)s"},
+                "aarch64-windows64": {"name": "aarch64-w64-mingw32"},
                 "xtensa-esp32-elf": {"name": "xtensa-esp32-elf"},
                 "aarch64-elf": {"name": "aarch64-elf"},
                 "aarch64-unknown-elf": {"name": "aarch64-unknown-elf"},
