@@ -17,31 +17,130 @@ name: GNAT Windows
 jobs:
   gcc_dependencies:
     name: GCC Dependencies WindowsMsys2
-    runs-on: windows-2022
+    runs-on: windows-11-arm
     env:
       CONFIG_SHELL: /bin/bash
+      msystem: CLANGARM64
     defaults:
       run:
-        shell: msys2 {0}
+        shell: C:/msys64/usr/bin/bash {0}
+        # shell: msys2 {0}
     steps:
     - name: Checkout Project
       uses: actions/checkout@v4
-    - name: Install msys2
-      uses: msys2/setup-msys2@v2
-      with:
-        install: |-
-          base-devel
-          git
-          rsync
-          mingw-w64-x86_64-github-cli
-          mingw-w64-x86_64-toolchain
-          mingw-w64-x86_64-python
-          mingw-w64-x86_64-python-pip
-          mingw-w64-x86_64-python-psutil
+    - name: Check architecture
+      shell: pwsh
+      run: |
+        $env:PROCESSOR_ARCHITECTURE
+        systeminfo | findstr /C:"System Type"
+    - name: Extract gnat
+      shell: pwsh
+      run: |
+        Invoke-WebRequest -Uri "https://github.com/reznikmm/mingw-woarm64-build/releases/download/gnat_20250131_0/native-aarch64-w64-mingw32-msvcrt.tar.gz" -OutFile gnat.tar.gz
+        tar xzf gnat.tar.gz
+        "$PWD\native-aarch64-w64-mingw32-msvcrt\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+    - name: Extract gnatmake
+      shell: pwsh
+      run: |
+        Invoke-WebRequest -Uri "https://github.com/reznikmm/mingw-woarm64-build/releases/download/gnat_20250131_0/gnatmake.tar.gz" -OutFile gnatmake.tar.gz
+        tar xzvf gnatmake.tar.gz -C "native-aarch64-w64-mingw32-msvcrt/bin"
+
+    - name: Use gnat
+      continue-on-error: true
+      shell: pwsh
+      run: |
+        gnatmake.exe --version
+
+    - name: Check gnat1 dependencies
+      shell: pwsh
+      run: |
+        cd $PWD\native-aarch64-w64-mingw32-msvcrt\bin\
+        & objdump.exe -p ../lib/gcc/aarch64-w64-mingw32/15.0.1/gnat1.exe | Select-String "DLL Name"        
+
+    - name: Try gnat
+      continue-on-error: true
+      shell: pwsh
+      run: |
+        cd $PWD\native-aarch64-w64-mingw32-msvcrt\bin\
+        @"
+        with Ada.Text_IO;
+        procedure Hello is
+        begin
+           Ada.Text_IO.Put_Line ("Hello");
+        end;
+        "@ | Out-File -Encoding ASCII hello.adb
+        Get-Content hello.adb
+        gcc.exe -v -c hello.adb
+        Write-Host "Exit code: $LASTEXITCODE"
+        & ../lib/gcc/aarch64-w64-mingw32/15.0.1/gnat1.exe hello.adb -o ccoRFUuO.s
+        Write-Host "Exit code: $LASTEXITCODE"
+        & ls -l *
+        gnatmake.exe -vh hello.adb -cargs -v
+        gnatmake.exe -vh --GCC=gcc.exe hello.adb
+        .\hello.exe
+
+    - name: Download MSYS2 ARM64
+      shell: pwsh
+      run: |
+        Invoke-WebRequest -Uri "https://github.com/msys2/msys2-installer/releases/download/2025-12-13/msys2-arm64-20251213.exe" -OutFile msys2-arm64-20251213.exe
+        .\msys2-arm64-20251213.exe in --confirm-command --accept-messages --root C:/msys64
+        
+    # - name: Install msys2
+    #   uses: msys2/setup-msys2@v2
+    #   with:
+    #     msystem: CLANGARM64
+    #     install: |-
+    #       base-devel
+    #       git
+    #       rsync
+    #       mingw-w64-clang-aarch64-python
+    #       mingw-w64-clang-aarch64-python-pip
+    #       mingw-w64-clang-aarch64-python-psutil
+
+    - name: Try gprbuild
+      continue-on-error: true
+      shell: pwsh
+      run: |
+        Invoke-WebRequest -Uri "https://github.com/alire-project/GNAT-FSF-builds/releases/download/gprbuild-25.0.0-1/gprbuild-x86_64-windows64-25.0.0-1.tar.gz" -OutFile gprbuild-x86_64-windows64-25.0.0-1.tar.gz
+        tar xzf gprbuild-x86_64-windows64-25.0.0-1.tar.gz
+        "$PWD\gprbuild-x86_64-windows64-25.0.0-1\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+    - name: Try gprbuild
+      continue-on-error: true
+      shell: pwsh
+      run: |
+        gprconfig.exe --show-targets || true
+        gprbuild.exe -vh --target=aarch64-w64-mingw32 hello.adb || true
+        gprbuild.exe -vh hello.adb || true
+        .\hello.exe
+
+    - name: Enable Windows-On-ARM MSYS repo
+      run: |-
+        pacman -S --noconfirm patch
+        patch /etc/pacman.conf 0002-add-woarm64-native-repository.patch
+        pacman -Sy
+        uname -a
+        pacman -S --noconfirm mingw-w64-aarch64-toolchain
+        pacman -Ss mingw-w64-aarch64-python || true
+        pacman -Ss aarch64-python || true
+    - name: Try gnat
+      run: |-
+        cat > hello.adb <<-EOF
+        with Ada.Text_IO;
+        procedure Hello is
+        begin
+           Ada.Text_IO.Put_Line ("Hello");
+        end;
+        EOF
+        cat hello.adb
+        gnatmake.exe hello.adb && ./hello
+
     - name: Install Python dependencies
       run: |-
         python3 -m pip install --upgrade pip
         pip install --break-system-packages e3-core==22.10.0
+
     - name: Prepare msys2 build setup
       run: |-
         df -h
@@ -122,6 +221,7 @@ jobs:
         path: C:/aaa/GNAT-FSF-builds/sbx/*/release_package*/install/*
         retention-days: 5
   gprbuild:
+    if: false
     name: GPRbuild WindowsMsys2
     runs-on: windows-2022
     env:
@@ -171,6 +271,7 @@ jobs:
         path: C:/aaa/GNAT-FSF-builds/sbx/*/release_package*/install/*
         retention-days: 5
   gnat_cross:
+    if: false
     strategy:
       fail-fast: false
       matrix:
@@ -238,6 +339,7 @@ jobs:
         name: gnat-release-packages-${{matrix.target}}
         path: C:/aaa/GNAT-FSF-builds/sbx/*/release_package*/install/*
   spark:
+    if: false
     name: SPARK WindowsMsys2
     runs-on: windows-2022
     env:
