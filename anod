@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Simple front-end to the task-specific anod scripts contained in lib."""
+"""Simple front-end to the task-specific anod scripts contained in lib"""
 
 ### Hack to get the platform DB in e3.platform plug-ing ###
 import importlib
